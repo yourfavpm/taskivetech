@@ -207,6 +207,12 @@ export default function Header() {
           .mobile-nav {
             display: flex;
           }
+          
+          /* Override global container padding for header to bring logo closer to edge */
+          :global(.header) .container {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+          }
         }
       `}</style>
     </header>

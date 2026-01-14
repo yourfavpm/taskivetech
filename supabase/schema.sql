@@ -10,10 +10,26 @@ CREATE TABLE IF NOT EXISTS consultations (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     company VARCHAR(255),
+    country VARCHAR(100),
     project_type VARCHAR(100) NOT NULL,
+    estimated_start_time VARCHAR(100),
     description TEXT NOT NULL,
     status VARCHAR(50) DEFAULT 'new' CHECK (status IN ('new', 'scheduled', 'completed', 'cancelled')),
     scheduled_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Testimonials table
+CREATE TABLE IF NOT EXISTS testimonials (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    quote TEXT NOT NULL,
+    avatar VARCHAR(10), -- Initials
+    image_url TEXT,
+    active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

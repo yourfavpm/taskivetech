@@ -10,7 +10,9 @@ export default function BookConsultation() {
     name: '',
     email: '',
     company: '',
+    country: '',
     project_type: '',
+    estimated_start_time: '',
     description: '',
     preferred_date: '',
     preferred_time: '',
@@ -184,6 +186,19 @@ export default function BookConsultation() {
             </div>
 
             <div className="form-group">
+              <label htmlFor="country" className="form-label">Country *</label>
+              <input
+                type="text"
+                id="country"
+                name="country"
+                className="form-input"
+                value={formState.country}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
               <label htmlFor="project_type" className="form-label">Project Type *</label>
               <select
                 id="project_type"
@@ -199,6 +214,24 @@ export default function BookConsultation() {
                     {type.label}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="estimated_start_time" className="form-label">Estimated Start Time *</label>
+              <select
+                id="estimated_start_time"
+                name="estimated_start_time"
+                className="form-select"
+                value={formState.estimated_start_time}
+                onChange={handleChange}
+                required
+              >
+                <option value="">When should we start?</option>
+                <option value="Immediately">Immediately</option>
+                <option value="In 1-2 weeks">In 1-2 weeks</option>
+                <option value="In 1 month">In 1 month</option>
+                <option value="Planning phase">Planning phase</option>
               </select>
             </div>
           </div>

@@ -1,47 +1,50 @@
 'use client'
 
 interface SidebarProps {
-    activeTab: string
-    setActiveTab: (tab: string) => void
-    userEmail?: string
-    onLogout: () => void
+  activeTab: string
+  setActiveTab: (tab: string) => void
+  userEmail?: string
+  onLogout: () => void
 }
 
 export default function Sidebar({ activeTab, setActiveTab, userEmail, onLogout }: SidebarProps) {
-    const menuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-        { id: 'consultations', label: 'Consultations', icon: '💬' },
-        { id: 'casestudies', label: 'Case Studies', icon: '📁' },
-        { id: 'settings', label: 'Settings', icon: '⚙️' },
-    ]
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'crm', label: 'CRM / Pipeline', icon: '🤝' },
+    { id: 'analytics', label: 'Analytics', icon: '📈' },
+    { id: 'consultations', label: 'Consultations', icon: '💬' },
+    { id: 'casestudies', label: 'Case Studies', icon: '📁' },
+    { id: 'testimonials', label: 'Testimonials', icon: '⭐' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
+  ]
 
-    return (
-        <aside className="sidebar">
-            <div className="sidebar-header">
-                <div className="brand">Taskive Admin</div>
-                <div className="user-email">{userEmail}</div>
-            </div>
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <div className="brand">Taskive Admin</div>
+        <div className="user-email">{userEmail}</div>
+      </div>
 
-            <nav className="nav-menu">
-                {menuItems.map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id)}
-                        className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-                    >
-                        <span className="icon">{item.icon}</span>
-                        <span className="label">{item.label}</span>
-                    </button>
-                ))}
-            </nav>
+      <nav className="nav-menu">
+        {menuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+          >
+            <span className="icon">{item.icon}</span>
+            <span className="label">{item.label}</span>
+          </button>
+        ))}
+      </nav>
 
-            <div className="sidebar-footer">
-                <button onClick={onLogout} className="logout-btn">
-                    Log Out
-                </button>
-            </div>
+      <div className="sidebar-footer">
+        <button onClick={onLogout} className="logout-btn">
+          Log Out
+        </button>
+      </div>
 
-            <style jsx>{`
+      <style jsx>{`
         .sidebar {
           width: 260px;
           background: #111111;
@@ -129,6 +132,6 @@ export default function Sidebar({ activeTab, setActiveTab, userEmail, onLogout }
           color: #fff;
         }
       `}</style>
-        </aside>
-    )
+    </aside>
+  )
 }

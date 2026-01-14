@@ -5,7 +5,9 @@ export interface Consultation {
     name: string
     email: string
     company?: string
+    country?: string
     project_type: string
+    estimated_start_time?: string
     description: string
     status: 'new' | 'scheduled' | 'completed' | 'cancelled'
     scheduled_at?: string
@@ -68,3 +70,73 @@ export const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
     { value: 'product-design', label: 'Product Design (UI/UX)' },
     { value: 'other', label: 'Other' },
 ]
+export type LeadLifecycleStatus =
+    | 'Consultation Booked'
+    | 'Discovery Completed'
+    | 'Qualified Lead'
+    | 'Proposal Sent'
+    | 'Negotiation / Review'
+    | 'Contract Signed'
+    | 'Project In Progress'
+    | 'Delivered / Handed Over'
+    | 'Retainer / Ongoing'
+    | 'Closed – Not a Fit'
+    | 'Closed – Lost'
+
+export interface CRMLead {
+    id: string
+    consultation_id?: string
+    company_name: string
+    contact_name: string
+    email: string
+    phone?: string
+    industry?: string
+    source: string
+    status: LeadLifecycleStatus
+    assigned_owner?: string
+    notes?: string
+    consultation_date?: string
+    proposal_sent_date?: string
+    contract_signed_date?: string
+    created_at: string
+    updated_at: string
+}
+
+export interface CRMFinancials {
+    id: string
+    lead_id: string
+    agreed_value: number
+    currency: string
+    payment_model: 'One-time' | 'Milestone-based' | 'Retainer'
+    amount_invoiced: number
+    amount_paid: number
+    outstanding_balance: number
+    created_at: string
+    updated_at: string
+}
+
+export interface CRMStatusHistory {
+    id: string
+    lead_id: string
+    old_status?: LeadLifecycleStatus
+    new_status: LeadLifecycleStatus
+    changed_by?: string
+    changed_at: string
+    notes?: string
+}
+
+export interface AnalyticsMetrics {
+    totalConsultations: number
+    conversionFunnel: {
+        status: LeadLifecycleStatus
+        count: number
+        percentage: number
+    }[]
+    revenueData: {
+        totalSigned: number
+        byMonth: { month: string; value: number }[]
+        byIndustry: { industry: string; value: number }[]
+        averageDealSize: number
+        winRate: number
+    }
+}

@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -12,6 +14,11 @@ import ConsultationManager from '@/components/admin/ConsultationManager'
 import CaseStudyManager from '@/components/admin/CaseStudyManager'
 import CaseStudyEditor from '@/components/admin/CaseStudyEditor'
 import SettingsForm from '@/components/admin/SettingsForm'
+import TestimonialManager from '@/components/admin/TestimonialManager'
+
+// CRM & Analytics Components
+import PipelineView from '@/components/admin/CRM/PipelineView'
+import AnalyticsDashboard from '@/components/admin/Analytics/AnalyticsDashboard'
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -219,6 +226,24 @@ export default function AdminDashboard() {
               settings={companySettings}
               onSave={saveSettings}
             />
+          </div>
+        )}
+
+        {activeTab === 'crm' && (
+          <div className="view-animate">
+            <PipelineView />
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="view-animate">
+            <AnalyticsDashboard />
+          </div>
+        )}
+
+        {activeTab === 'testimonials' && (
+          <div className="view-animate">
+            <TestimonialManager />
           </div>
         )}
 

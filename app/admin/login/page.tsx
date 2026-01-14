@@ -1,82 +1,96 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function AdminLogin() {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-    const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-        try {
-            if (email !== 'taskive.dev@gmail.com') {
-                throw new Error('Access denied. This area is restricted to authorized personnel.')
-            }
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-            const supabase = createClient()
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            })
+    try {
+      if (email !== 'taskive.dev@gmail.com') {
+        throw new Error('Access denied. This area is restricted to authorized personnel.')
+      }
 
-            if (signInError) throw signInError
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-            router.push('/admin')
-            router.refresh()
-        } catch (err: any) {
-            setError(err.message || 'Failed to sign in')
-        } finally {
-            setLoading(false)
+      if (signInError) {
+        if (signInError.message === 'Invalid login credentials') {
+          throw new Error('Invalid email or password. Please try again.')
         }
+        throw signInError
+      }
+
+      router.push('/admin')
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    return (
-        <div className="login-page">
-            <div className="login-card">
-                <h1 className="title">Admin Access</h1>
-                <p className="subtitle">Please sign in to continue</p>
+  if (!mounted) {
+    return <div className="login-page"><div className="login-card">Loading...</div></div>
+  }
 
-                <form onSubmit={handleLogin} className="login-form">
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@taskive.dev"
-                            required
-                        />
-                    </div>
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        <h1 className="title">Admin Access</h1>
+        <p className="subtitle">Please sign in to continue</p>
 
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@taskive.dev"
+              required
+            />
+          </div>
 
-                    {error && <div className="error-message">{error}</div>}
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-                    <button type="submit" className="login-btn" disabled={loading}>
-                        {loading ? 'Authenticating...' : 'Sign In'}
-                    </button>
-                </form>
-            </div>
+          {error && <div className="error-message">{error}</div>}
 
-            <style jsx>{`
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? 'Authenticating...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+
+      <style jsx>{`
         .login-page {
           min-height: 100vh;
           display: flex;
@@ -169,6 +183,6 @@ export default function AdminLogin() {
           cursor: not-allowed;
         }
       `}</style>
-        </div>
-    )
+    </div>
+  )
 }

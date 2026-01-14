@@ -72,6 +72,13 @@ export default function Pricing() {
             </div>
           ))}
         </div>
+
+        <div className="pricing-note">
+          <p>
+            <strong>Note on Pricing:</strong> Final cost is determined by project scope, technical complexity, and specific feature requirements.
+            We provide a detailed custom quote following a thorough discovery call to ensure our proposal aligns perfectly with your goals.
+          </p>
+        </div>
       </div>
 
       <style jsx>{`
@@ -99,6 +106,25 @@ export default function Pricing() {
           grid-template-columns: repeat(3, 1fr);
           gap: 24px;
           align-items: start;
+        }
+
+        .pricing-note {
+          margin-top: 48px;
+          padding: 24px;
+          background: #ffffff;
+          border: 1px solid var(--color-border-light);
+          border-radius: 12px;
+          max-width: 800px;
+          margin-left: auto;
+          margin-right: auto;
+          text-align: center;
+        }
+
+        .pricing-note p {
+          font-size: 15px;
+          color: var(--color-text-secondary);
+          line-height: 1.6;
+          margin: 0;
         }
 
         .pricing-card {

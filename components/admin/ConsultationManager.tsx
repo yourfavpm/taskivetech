@@ -109,6 +109,14 @@ export default function ConsultationManager({
                                 <p>{selectedConsultation.project_type}</p>
                             </div>
                             <div className="info-card">
+                                <label>Country</label>
+                                <p>{selectedConsultation.country || 'N/A'}</p>
+                            </div>
+                            <div className="info-card">
+                                <label>Est. Start Time</label>
+                                <p>{selectedConsultation.estimated_start_time || 'N/A'}</p>
+                            </div>
+                            <div className="info-card">
                                 <label>Preferred Time</label>
                                 <p>
                                     {selectedConsultation.preferred_date || 'N/A'}

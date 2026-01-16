@@ -91,6 +91,7 @@ export interface CRMLead {
     email: string
     phone?: string
     industry?: string
+    country?: string
     source: string
     status: LeadLifecycleStatus
     assigned_owner?: string
@@ -134,9 +135,17 @@ export interface AnalyticsMetrics {
     }[]
     revenueData: {
         totalSigned: number
-        byMonth: { month: string; value: number }[]
+        totalPaid: number
+        totalOutstanding: number
+        byMonth: { month: string; signed: number; paid: number }[]
         byIndustry: { industry: string; value: number }[]
+        byCountry: { country: string; value: number; count: number }[]
         averageDealSize: number
         winRate: number
     }
+    leadsTrend: {
+        month: string
+        newLeads: number
+        converted: number
+    }[]
 }

@@ -4,15 +4,13 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { CompanySettings } from '@/lib/types'
+import { usePathname } from 'next/navigation'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const pathname = usePathname()
 
   const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null)
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
 
   const fetchSettings = async () => {
     const supabase = createClient()
@@ -22,6 +20,16 @@ export default function Footer() {
       return
     }
     if (data) setCompanySettings(data)
+  }
+
+  useEffect(() => {
+    if (!pathname?.startsWith('/admin')) {
+      fetchSettings()
+    }
+  }, [pathname])
+
+  if (pathname?.startsWith('/admin')) {
+    return null
   }
 
   const footerLinks = {

@@ -79,6 +79,9 @@ CREATE POLICY "Admins can manage CRM financials" ON crm_financials
 CREATE POLICY "Admins can view CRM status history" ON crm_status_history
     FOR SELECT USING (auth.role() = 'authenticated');
 
+CREATE POLICY "Admins can insert CRM status history" ON crm_status_history
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated' OR auth.role() = 'anon');
+
 -- Trigger to automatically create status history entry on status change
 CREATE OR REPLACE FUNCTION log_lead_status_change()
 RETURNS TRIGGER AS $$
@@ -89,7 +92,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER tr_lead_status_change
     AFTER UPDATE OF status ON crm_leads
@@ -104,7 +107,7 @@ BEGIN
     VALUES (NEW.id, NULL, NEW.status, auth.uid());
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER tr_lead_creation
     AFTER INSERT ON crm_leads
@@ -119,7 +122,7 @@ BEGIN
     VALUES (NEW.id, COALESCE(NEW.company, 'N/A'), NEW.name, NEW.email, NEW.project_type, 'website', NEW.description);
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER tr_consultation_to_lead
     AFTER INSERT ON consultations

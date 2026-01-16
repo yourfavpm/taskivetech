@@ -3,9 +3,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
 
   const navLinks = [
     { href: '/#capabilities', label: 'Services' },

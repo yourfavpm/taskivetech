@@ -58,6 +58,26 @@ export function calculateAnalytics(
 
     const byIndustry = Object.entries(byIndustryMap).map(([industry, value]) => ({ industry, value }))
 
+    // Group by country
+    const byCountryMap = leads.reduce((acc, lead) => {
+        const leadFin = financials.find(f => f.lead_id === lead.id)
+        const country = lead.country || 'Unknown'
+        if (!acc[country]) {
+            acc[country] = { value: 0, count: 0 }
+        }
+        acc[country].count += 1
+        if (leadFin) {
+            acc[country].value += Number(leadFin.agreed_value)
+        }
+        return acc
+    }, {} as Record<string, { value: number, count: number }>)
+
+    const byCountry = Object.entries(byCountryMap).map(([country, data]) => ({
+        country,
+        value: data.value,
+        count: data.count
+    }))
+
     // Win rate: Signed vs Proposals Sent
     const proposalsSent = leads.filter(l =>
         ['Proposal Sent', 'Negotiation / Review', 'Contract Signed', 'Project In Progress', 'Delivered / Handed Over', 'Retainer / Ongoing'].includes(l.status)
@@ -67,15 +87,68 @@ export function calculateAnalytics(
     ).length
     const winRate = proposalsSent > 0 ? Math.round((contractsSigned / proposalsSent) * 100) : 0
 
+    // Payment metrics
+    const totalPaid = financials.reduce((sum, f) => sum + Number(f.amount_paid || 0), 0)
+    const totalOutstanding = totalSigned - totalPaid
+
+    // Revenue by month (based on contract_signed_date if available, else lead created_at)
+    const revenueByMonthMap: Record<string, { signed: number; paid: number }> = {}
+    leads.forEach(lead => {
+        const leadFin = financials.find(f => f.lead_id === lead.id)
+        if (leadFin && Number(leadFin.agreed_value) > 0) {
+            const dateStr = lead.contract_signed_date || lead.created_at
+            if (dateStr) {
+                const date = new Date(dateStr)
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+                if (!revenueByMonthMap[monthKey]) {
+                    revenueByMonthMap[monthKey] = { signed: 0, paid: 0 }
+                }
+                revenueByMonthMap[monthKey].signed += Number(leadFin.agreed_value)
+                revenueByMonthMap[monthKey].paid += Number(leadFin.amount_paid || 0)
+            }
+        }
+    })
+
+    const byMonth = Object.entries(revenueByMonthMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-6) // Last 6 months
+        .map(([month, data]) => ({ month, signed: data.signed, paid: data.paid }))
+
+    // Leads trend by month
+    const leadsTrendMap: Record<string, { newLeads: number; converted: number }> = {}
+    leads.forEach(lead => {
+        const createdDate = new Date(lead.created_at)
+        const monthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`
+        if (!leadsTrendMap[monthKey]) {
+            leadsTrendMap[monthKey] = { newLeads: 0, converted: 0 }
+        }
+        leadsTrendMap[monthKey].newLeads += 1
+
+        // Count as converted if reached Contract Signed or beyond
+        const convertedStatuses = ['Contract Signed', 'Project In Progress', 'Delivered / Handed Over', 'Retainer / Ongoing']
+        if (convertedStatuses.includes(lead.status)) {
+            leadsTrendMap[monthKey].converted += 1
+        }
+    })
+
+    const leadsTrend = Object.entries(leadsTrendMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-6) // Last 6 months
+        .map(([month, data]) => ({ month, newLeads: data.newLeads, converted: data.converted }))
+
     return {
         totalConsultations,
         conversionFunnel,
         revenueData: {
             totalSigned,
-            byMonth: [], // Would require grouping by contract_signed_date
+            totalPaid,
+            totalOutstanding,
+            byMonth,
             byIndustry,
+            byCountry,
             averageDealSize: contractsSigned > 0 ? Math.round(totalSigned / contractsSigned) : 0,
             winRate
-        }
+        },
+        leadsTrend
     }
 }

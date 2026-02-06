@@ -41,6 +41,18 @@ export default function BookConsultation() {
 
       if (submitError) throw submitError
 
+      // Trigger email notification
+      try {
+        await fetch('/api/send-consultation-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formState),
+        })
+      } catch (emailErr) {
+        // Log error but don't stop the success state for the user
+        console.error('Error sending notification email:', emailErr)
+      }
+
       setSubmitted(true)
     } catch (err) {
       console.error('Error submitting consultation:', err)

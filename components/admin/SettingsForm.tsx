@@ -48,7 +48,7 @@ export default function SettingsForm({ settings, onSave }: SettingsFormProps) {
                             type="email"
                             value={formData.contact_email || ''}
                             onChange={(e) => handleChange('contact_email', e.target.value)}
-                            placeholder="hello@taskive.tech"
+                            placeholder="info@taskivetech.tech"
                         />
                     </div>
 

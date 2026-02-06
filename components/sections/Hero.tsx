@@ -59,6 +59,12 @@ export default function Hero() {
       <div className="container">
         <div className="hero-wrapper">
           <div className="hero-content">
+            <div className="hero-badge">
+              <div className="badge-content">
+                <span className="badge-icon">⚡</span>
+                <span className="badge-text">See a live prototype in 48-72 hours — before any payment</span>
+              </div>
+            </div>
             <h1 className="hero-title">
               We design and build digital products that work.
             </h1>
@@ -236,6 +242,90 @@ export default function Hero() {
         .hero-content {
           position: relative;
           z-index: 2;
+        }
+
+        .hero-badge {
+          display: inline-block;
+          margin-bottom: 24px;
+          animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .badge-content {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          border-radius: 100px;
+          box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+          animation: pulse 2s ease-in-out infinite;
+          overflow: hidden;
+        }
+
+        .badge-content::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          animation: shimmer 3s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+          }
+          50% {
+            box-shadow: 0 4px 30px rgba(37, 99, 235, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            left: -100%;
+          }
+          100% {
+            left: 100%;
+          }
+        }
+
+        .badge-icon {
+          font-size: 18px;
+          animation: bounce 2s infinite;
+          position: relative;
+          z-index: 1;
+        }
+
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-3px);
+          }
+        }
+
+        .badge-text {
+          font-size: 14px;
+          font-weight: 600;
+          color: white;
+          letter-spacing: -0.01em;
+          position: relative;
+          z-index: 1;
         }
 
         .hero-title {

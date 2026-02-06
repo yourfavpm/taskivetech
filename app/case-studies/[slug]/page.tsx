@@ -2,9 +2,11 @@
 
 import { notFound, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
-// Case study data
-const caseStudiesData: Record<string, {
+// Fallback case study data if database is not available
+const fallbackCaseStudiesData: Record<string, {
   title: string
   summary: string
   industry: string
@@ -13,6 +15,7 @@ const caseStudiesData: Record<string, {
   process: string[]
   outcome: string
   stats: { value: string; label: string }[]
+  images: string[]
 }> = {
   'atelier-ai': {
     title: 'Atelier AI',
@@ -21,12 +24,13 @@ const caseStudiesData: Record<string, {
     challenge: 'Fashion design is typically a slow, fragmented process involving manual sketching, expensive sampling, and complex supply chains. Designers needed a way to accelerate the "idea-to-product" lifecycle without sacrificing creative control or quality.',
     solution: 'We built a comprehensive AI-powered platform that generates photorealistic visualizations from rough sketches, automatically creates production-ready tech packs, and connects directly with a vetted network of manufacturers. The system uses generative AI to visualize fabrics and drapes in real-time.',
     process: ['Designer workflow analysis', 'Generative AI model integration', '3D visualization engine', 'Tech pack automation', 'Supply chain API integration', 'Beta launch'],
-    outcome: 'Reduced design-to-sample time by 80%. Adopted by 150+ independent fashion labels in the first 6 months. Platform facilitated over $2M in production volume.',
+    outcome: 'Reduced design-to-sample time by 80%. Adopted by 150+ independent fashion labels in the first 6 months.',
     stats: [
       { value: '80%', label: 'Faster Time-to-Market' },
       { value: '150+', label: 'Design Labels' },
-      { value: '$2M+', label: 'Production Volume' },
+      { value: '$100k+', label: 'Production Volume' },
     ],
+    images: [],
   },
   'glarrie-herbal': {
     title: 'Glarrie Herbal',
@@ -41,35 +45,121 @@ const caseStudiesData: Record<string, {
       { value: '4.9/5', label: 'Customer Rating' },
       { value: '150%', label: 'More Consultations' },
     ],
+    images: [],
   },
-  'fintech-dashboard': {
-    title: 'FinFlow Dashboard',
-    summary: 'Real-time financial analytics dashboard for institutional investors.',
-    industry: 'Finance',
-    challenge: "FinFlow required a high-performance dashboard capable of processing and visualizing millions of data points in real-time. Their existing tools were slow, outdated, and couldn't handle the volume of data their analysts needed.",
-    solution: 'We engineered a responsive dashboard with WebSocket connections for live data, advanced charting with D3.js, and customizable data views. The architecture was optimized for performance at every layer.',
-    process: ['Technical requirements', 'Architecture design', 'Frontend development', 'API integration', 'Performance optimization', 'Security audit'],
-    outcome: 'Handles 10M+ data points with sub-second render times. Reduced analyst workflow time by 60%. Successfully passed SOC 2 compliance audit.',
+  'internal-dashboard': {
+    title: 'Internal Admin Dashboard',
+    summary: 'A robust internal tool for managing complex business operations and real-time data analytics.',
+    industry: 'Business Operations',
+    challenge: "The team needed a centralized hub to monitor operational metrics, manage user permissions, and automate repetitive administrative tasks that were previously handled manually across multiple spreadsheets.",
+    solution: 'We built a high-performance admin dashboard with a modular architecture, real-time data synchronization using WebSockets, and a comprehensive role-based access control (RBAC) system.',
+    process: ['Requirement gathering', 'System architecture', 'UI/UX internal design', 'Backend API development', 'Integration & testing', 'Deployment'],
+    outcome: 'Streamlined administrative workflows by 70%, reduced data entry errors by 45%, and provided real-time visibility into key performance indicators for the management team.',
     stats: [
-      { value: '10M+', label: 'Data Points' },
-      { value: '<1s', label: 'Render Time' },
-      { value: '60%', label: 'Time Saved' },
+      { value: '70%', label: 'Workflow Efficiency' },
+      { value: '45%', label: 'Error Reduction' },
+      { value: 'Real-time', label: 'Data Sync' },
     ],
+    images: [],
   },
 }
 
 export default function CaseStudyPage() {
   const params = useParams()
-  const slug = params.slug as string
+  const slug = params?.slug as string
+  const [caseStudy, setCaseStudy] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const caseStudy = caseStudiesData[slug]
+  useEffect(() => {
+    // Debug log to help identify what slug Next.js is seeing
+    console.log('Fetching case study for slug:', slug)
 
-  if (!caseStudy) {
-    notFound()
+    async function fetchCaseStudy() {
+      if (!slug) return
+
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('case_studies')
+          .select('*')
+          .eq('slug', slug)
+          .eq('published', true)
+          .single()
+
+        if (data) {
+          console.log('Found data in database for:', slug)
+          // Parse JSONB fields
+          const images = Array.isArray(data.images) ? data.images : []
+          const process = Array.isArray(data.process) ? data.process : JSON.parse(data.process || '[]')
+
+          setCaseStudy({
+            title: data.title,
+            summary: data.summary,
+            industry: data.industry,
+            challenge: data.challenge,
+            solution: data.solution,
+            process: process,
+            outcome: data.outcome,
+            images: images,
+            stats: fallbackCaseStudiesData[slug]?.stats || []
+          })
+        } else {
+          console.log('No data in database, checking fallbacks for:', slug)
+          if (fallbackCaseStudiesData[slug]) {
+            setCaseStudy(fallbackCaseStudiesData[slug])
+          } else {
+            setCaseStudy(null)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching case study:', error)
+        // Ensure we at least check fallbacks if DB call fails
+        if (fallbackCaseStudiesData[slug]) {
+          setCaseStudy(fallbackCaseStudiesData[slug])
+        } else {
+          setCaseStudy(null)
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCaseStudy()
+  }, [slug])
+
+  // If we have fallback data for this slug, we can show it immediately
+  // otherwise show loading until the DB fetch completes
+  const currentCaseStudy = caseStudy || fallbackCaseStudiesData[slug]
+
+  if (isLoading && !currentCaseStudy) {
+    return (
+      <div className="case-study-page flex items-center justify-center min-h-[60vh]">
+        <div className="animate-pulse text-[var(--color-text-secondary)] text-xl font-medium">
+          Loading case study...
+        </div>
+      </div>
+    )
   }
+
+  if (!currentCaseStudy && !isLoading) {
+    return notFound()
+  }
+
+  // Use the one we have (DB version prioritized over fallback)
+  const displayData = currentCaseStudy
+
+  // Get the first image or null
+  const coverImage = displayData.images && displayData.images.length > 0 ? displayData.images[0] : null
 
   return (
     <div className="case-study-page">
+      {/* Debug Info (Visible only during dev) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{ position: 'fixed', bottom: 10, right: 10, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '10px', borderRadius: '8px', fontSize: '12px', zIndex: 9999 }}>
+          Slug: {slug} | Found DB: {caseStudy ? 'Yes' : 'No'} | Found Fallback: {fallbackCaseStudiesData[slug] ? 'Yes' : 'No'}
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="case-hero">
         <div className="container">
@@ -81,20 +171,27 @@ export default function CaseStudyPage() {
           </Link>
 
           <div className="hero-content">
-            <span className="industry-tag">{caseStudy.industry}</span>
-            <h1>{caseStudy.title}</h1>
-            <p className="hero-summary">{caseStudy.summary}</p>
+            <span className="industry-tag">{displayData.industry}</span>
+            <h1>{displayData.title}</h1>
+            <p className="hero-summary">{displayData.summary}</p>
           </div>
         </div>
       </section>
 
-      {/* Project Image Placeholder */}
+      {/* Project Image Showcase */}
       <section className="project-showcase">
         <div className="container">
           <div className="showcase-image">
-            <div className="image-placeholder">
-              <span>{caseStudy.title.charAt(0)}</span>
-            </div>
+            {coverImage ? (
+              <div
+                className="showcase-bg-image"
+                style={{ backgroundImage: `url(${coverImage})` }}
+              />
+            ) : (
+              <div className="image-placeholder">
+                <span>{displayData.title.charAt(0)}</span>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -103,7 +200,7 @@ export default function CaseStudyPage() {
       <section className="stats-section">
         <div className="container">
           <div className="stats-grid">
-            {caseStudy.stats.map((stat, index) => (
+            {displayData.stats.map((stat: any, index: number) => (
               <div key={index} className="stat-item">
                 <span className="stat-value">{stat.value}</span>
                 <span className="stat-label">{stat.label}</span>
@@ -123,7 +220,7 @@ export default function CaseStudyPage() {
                 <span className="block-number">01</span>
                 <h2>The Challenge</h2>
               </div>
-              <p>{caseStudy.challenge}</p>
+              <p>{displayData.challenge}</p>
             </div>
 
             {/* Solution */}
@@ -132,7 +229,7 @@ export default function CaseStudyPage() {
                 <span className="block-number">02</span>
                 <h2>The Solution</h2>
               </div>
-              <p>{caseStudy.solution}</p>
+              <p>{displayData.solution}</p>
             </div>
           </div>
         </div>
@@ -146,11 +243,11 @@ export default function CaseStudyPage() {
             <h2>The Process</h2>
           </div>
           <div className="process-timeline">
-            {caseStudy.process.map((step, index) => (
+            {displayData.process.map((step: string, index: number) => (
               <div key={index} className="process-step">
                 <div className="step-indicator">
                   <span className="step-dot"></span>
-                  {index < caseStudy.process.length - 1 && <span className="step-line"></span>}
+                  {index < displayData.process.length - 1 && <span className="step-line"></span>}
                 </div>
                 <div className="step-content">
                   <span className="step-number">Step {index + 1}</span>
@@ -170,7 +267,7 @@ export default function CaseStudyPage() {
               <span className="block-number">04</span>
               <h2>The Outcome</h2>
             </div>
-            <p className="outcome-text">{caseStudy.outcome}</p>
+            <p className="outcome-text">{displayData.outcome}</p>
           </div>
         </div>
       </section>
@@ -257,6 +354,13 @@ export default function CaseStudyPage() {
           border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+        }
+
+        .showcase-bg-image {
+          aspect-ratio: 16 / 9;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
         }
 
         .image-placeholder {

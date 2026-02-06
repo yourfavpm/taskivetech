@@ -1,80 +1,83 @@
 'use client'
 
-const testimonials = [
-    {
-        name: "Sarah Chen",
-        role: "Founder & CEO",
-        company: "TechFlow Systems",
-        quote: "Taskive Tech didn't just build our platform; they helped us define our digital future. Their attention to detail and engineering excellence is unmatched in the industry.",
-        avatar: "SC"
-    },
-    {
-        name: "Marcus Rodriguez",
-        role: "Product Director",
-        company: "Nexus Fintech",
-        quote: "The team's ability to navigate complex financial security requirements while maintaining a premium user experience was critical to our successful launch.",
-        avatar: "MR"
-    },
-    {
-        name: "Elena Rossi",
-        role: "Marketing Head",
-        company: "Luxe Retail Group",
-        quote: "Our new e-commerce ecosystem is a masterpiece. We saw a 40% increase in conversion within the first month of going live with Taskive.",
-        avatar: "ER"
-    },
-    {
-        name: "David Park",
-        role: "CTO",
-        company: "EduSphere",
-        quote: "The speed and quality Taskive delivers for MVPs is phenomenal. They under-promise and over-deliver every single time.",
-        avatar: "DP"
-    },
-    {
-        name: "Amina Okafor",
-        role: "Operations Lead",
-        company: "Global Impact Org",
-        quote: "Finding a partner that understands impact as much as they understand code is rare. Taskive Tech is exactly that partner.",
-        avatar: "AO"
-    },
-    {
-        name: "Julian Schmidt",
-        role: "Lead Engineer",
-        company: "MediaCore",
-        quote: "Highly scalable, clean code, and a pleasure to collaborate with. Their team feels like an extension of our own in-house engineering squad.",
-        avatar: "JS"
-    }
-]
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
+interface Testimonial {
+  id: string
+  name: string
+  role: string
+  company: string
+  quote: string
+  avatar: string
+  active: boolean
+}
 
 export default function Testimonials() {
-    return (
-        <section id="testimonials" className="testimonials section">
-            <div className="container">
-                <div className="section-header text-center">
-                    <small className="section-eyebrow">Social Proof</small>
-                    <h2>Voices from our Clients</h2>
-                    <p className="section-subtitle mx-auto">
-                        We've partnered with forward-thinking brands to build products that matter.
-                    </p>
-                </div>
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const supabase = createClient()
 
-                <div className="testimonials-grid">
-                    {testimonials.map((testimonial, index) => (
-                        <div key={index} className="testimonial-card">
-                            <div className="quote-icon">"</div>
-                            <p className="testimonial-quote">{testimonial.quote}</p>
-                            <div className="testimonial-footer">
-                                <div className="testimonial-avatar">{testimonial.avatar}</div>
-                                <div className="testimonial-info">
-                                    <h4 className="testimonial-name">{testimonial.name}</h4>
-                                    <p className="testimonial-role">{testimonial.role} at {testimonial.company}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+  useEffect(() => {
+    async function fetchTestimonials() {
+      try {
+        const { data, error } = await supabase
+          .from('testimonials')
+          .select('*')
+          .eq('active', true)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setTestimonials(data || [])
+      } catch (error) {
+        console.error('Error fetching testimonials:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTestimonials()
+  }, [])
+
+  return (
+    <section id="testimonials" className="testimonials section">
+      <div className="container">
+        <div className="section-header text-center">
+          <small className="section-eyebrow">Social Proof</small>
+          <h2>Voices from our Clients</h2>
+          <p className="section-subtitle mx-auto">
+            We've partnered with forward-thinking brands to build products that matter.
+          </p>
+        </div>
+
+        <div className="testimonials-grid">
+          {isLoading ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-[var(--color-text-secondary)] animate-pulse">Loading testimonials...</p>
             </div>
+          ) : testimonials.length > 0 ? (
+            testimonials.map((testimonial) => (
+              <div key={testimonial.id} className="testimonial-card">
+                <div className="quote-icon">"</div>
+                <p className="testimonial-quote">{testimonial.quote}</p>
+                <div className="testimonial-footer">
+                  <div className="testimonial-avatar">{testimonial.avatar}</div>
+                  <div className="testimonial-info">
+                    <h4 className="testimonial-name">{testimonial.name}</h4>
+                    <p className="testimonial-role">{testimonial.role} at {testimonial.company}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-[var(--color-text-muted)]">New testimonials launching soon.</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-            <style jsx>{`
+      <style jsx>{`
         .testimonials {
           background-color: var(--color-background);
           padding: 120px 0;
@@ -210,6 +213,6 @@ export default function Testimonials() {
           }
         }
       `}</style>
-        </section>
-    )
+    </section>
+  )
 }

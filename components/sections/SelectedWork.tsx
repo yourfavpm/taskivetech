@@ -18,10 +18,10 @@ const fallbackCaseStudies = [
     images: [],
   },
   {
-    slug: 'fintech-dashboard',
-    title: 'FinFlow Dashboard',
-    summary: 'Real-time financial analytics dashboard for institutional investors.',
-    industry: 'Finance',
+    slug: 'internal-dashboard',
+    title: 'Internal Admin Dashboard',
+    summary: 'A robust internal tool for managing complex business operations and real-time data analytics.',
+    industry: 'Business Operations',
     images: [],
   },
 ]
